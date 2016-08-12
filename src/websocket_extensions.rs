@@ -9,7 +9,7 @@ use websocket::client::request::Url;
 use websocket::{Client, Message, Sender, Receiver};
 use websocket::message::Type;
 
-pub fn connect_to<'a>(url: String) -> Option<channel_sender<websocket::Message<'a>>> {
+pub fn connect_to(url: String) -> Option<channel_sender<websocket::Message<'static>>> {
 	let ws_uri = Url::parse(&url[..]).unwrap();
 	let request = Client::connect(ws_uri).unwrap();
 	let response = request.send().unwrap();
@@ -62,7 +62,7 @@ pub fn connect_to<'a>(url: String) -> Option<channel_sender<websocket::Message<'
 				Ok(m) => m,
 				Err(e) => {
 					println!("Receive Loop: {:?}", e);
-					let _ = tx_in.send(Message::close());
+					let _ = tx.send(Message::close());
 					return;
 				}
 			};
@@ -70,12 +70,12 @@ pub fn connect_to<'a>(url: String) -> Option<channel_sender<websocket::Message<'
 				Type::Close => {
 					println!("Received close");
 					// Got a close message, so send a close message and return
-					let _ = tx_in.send(Message::close());
+					let _ = tx.send(Message::close());
 					return;
 				}
 
 				Type::Ping => {
-					match tx_in.send(Message::pong(message.payload)) {
+					match tx.send(Message::pong(message.payload)) {
 						// Send a pong in response
 						Ok(()) => (),
 						Err(e) => {

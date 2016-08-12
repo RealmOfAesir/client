@@ -15,7 +15,7 @@ fn main() {
 	let test_msg_str = serialize_message(&test_msg).unwrap();
 
 	println!("json str: {:?}", test_msg_str);
-	send(test_msg_str, tx);
+	send(test_msg_str, tx.unwrap());
 
 	loop {
 
