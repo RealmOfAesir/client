@@ -27,7 +27,7 @@ using namespace std;
 using namespace experimental;
 #endif
 
-void print_shader_log(GLuint shader) {
+void print_shader_log(GLuint const shader) {
     if(glIsShader(shader)) {
         int infoLogLength = 0;
         int maxLength = 0;
@@ -47,7 +47,7 @@ void print_shader_log(GLuint shader) {
     }
 }
 
-void print_program_log(GLuint program) {
+void print_program_log(GLuint const program) {
     if(glIsProgram(program)) {
         int infoLogLength = 0;
         int maxLength = 0;
@@ -67,7 +67,7 @@ void print_program_log(GLuint program) {
     }
 }
 
-optional<GLuint> load_shader_from_file(string path, GLenum shaderType) {
+optional<GLuint> const load_shader_from_file(string const & path, GLenum const shaderType) {
     //Open file
     GLuint shaderID = 0;
     string shaderString;

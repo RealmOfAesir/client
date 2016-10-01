@@ -18,28 +18,27 @@
 
 #pragma once
 
-#include <cstdint>
+#ifndef __gl_h_
+#include <GL/glew.h>
+#endif
 
-class timer
-{
+#include <glm/vec4.hpp>
+#include <iostream>
+
+class texture {
     public:
-		timer();
+        texture(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
+            glm::vec4 const position, glm::vec4 const clip);
 
-		void start();
-		void stop();
-		void pause();
-		void unpause();
+        ~texture();
 
-		uint32_t const get_ticks() const;
-
-		bool const is_started() const;
-		bool const is_paused() const;
+        void render();
 
     private:
-		uint32_t _start_ticks;
-
-		uint32_t _paused_ticks;
-
-		bool _paused;
-		bool _started;
+        GLuint _program_id;
+        GLuint _buffer_object;
+        GLuint _texture_id;
+        GLuint _vertex_array_id;
+        glm::vec4 _position;
+        glm::vec4 _clip;
 };

@@ -17,75 +17,29 @@
 */
 
 #include <SDL.h>
+#include <SDL_image.h>
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 #include <GL/glu.h>
+#include <glm/vec4.hpp>
 #include <stdio.h>
 #include <iostream>
 #include <unistd.h>
 
+#include "custom_optional.h"
 #include "shader_utils.h"
 #include "timer.h"
+#include "texture.h"
 
 using namespace std;
 
+#ifdef EXPERIMENTAL_OPTIONAL
+using namespace experimental;
+#endif
+
 SDL_Window *window = nullptr;
 SDL_GLContext context = nullptr;
-GLuint programId = 0;
-GLint vertexPos2DLocation = -1;
-GLuint VAO = 0;
-GLuint VBO = 0;
-GLuint IBO = 0;
-GLuint vertexArrayId = 0;
-
-void init_gl() {
-    SDL_GL_MakeCurrent(window, context);
-
-    programId = glCreateProgram();
-
-    auto vertexShaderMaybe = load_shader_from_file("shaders/triangle_vertex.shader", GL_VERTEX_SHADER);
-    if(!vertexShaderMaybe) {
-        exit(1);
-    }
-
-    glAttachShader(programId, vertexShaderMaybe.value());
-
-    auto fragmentShaderMaybe = load_shader_from_file("shaders/triangle_fragment.shader", GL_FRAGMENT_SHADER);
-    if(!fragmentShaderMaybe) {
-        exit(1);
-    }
-
-    glAttachShader(programId, fragmentShaderMaybe.value());
-
-    glLinkProgram(programId);
-
-    glDeleteShader(vertexShaderMaybe.value());
-    glDeleteShader(fragmentShaderMaybe.value());
-
-    GLint programSucces = GL_TRUE;
-    glGetProgramiv(programId, GL_LINK_STATUS, &programSucces);
-    if(programSucces != GL_TRUE) {
-        cout << "Could not link program " << programId << endl;
-        print_program_log(programId);
-        exit(1);
-    }
-
-    glClearColor(0.f, 0.f, 0.f, 1.f);
-
-    GLfloat vertexData[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
-    };
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData, GL_STATIC_DRAW);
-
-    GLuint vertexArrayId;
-    glGenVertexArrays(1, &vertexArrayId);
-    glBindVertexArray(vertexArrayId);
-}
+optional<texture*> _texture = {};
 
 void init_sdl() {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -97,7 +51,7 @@ void init_sdl() {
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
-    window = SDL_CreateWindow("Realm of Aesir", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Realm of Aesir", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     if(window == nullptr) {
         cout << "Couldn't initialize window: " << SDL_GetError() << endl;
         exit(1);
@@ -120,14 +74,33 @@ void init_sdl() {
         cout << "Couldn't initialize vsync: " << SDL_GetError() << endl;
         exit(1);
     }
+
+    if(SDL_GL_MakeCurrent(window, context) < 0) {
+        cout << "Couldn't make OpenGL context current: " << SDL_GetError() << endl;
+        exit(1);
+    }
+
+    glClearColor(0.f, 0.f, 0.f, 1.f);
+}
+
+void init_sdl_image() {
+    int initted = IMG_Init(IMG_INIT_PNG);
+    if((initted & IMG_INIT_PNG) != IMG_INIT_PNG) {
+        cout << "SDL image init went wrong: " << IMG_GetError() << endl;
+        exit(1);
+    }
 }
 
 void close()
 {
-    glDeleteProgram(programId);
+    if(_texture) {
+        delete _texture.value();
+    }
 
 	SDL_DestroyWindow(window);
 	window = nullptr;
+
+    IMG_Quit();
 
 	SDL_Quit();
 }
@@ -136,17 +109,11 @@ void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glUseProgram(programId);
+    if(_texture) {
+        _texture.value()->render();
+    }
 
-    glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(GLfloat), NULL);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    glDisableVertexAttribArray(0);
-
-	glUseProgram(0);
+    SDL_GL_SwapWindow(window);
 }
 
 void set_working_dir() {
@@ -169,7 +136,7 @@ void init_extras() {
 int main() {
     init_sdl();
     set_working_dir();
-    init_gl();
+    init_sdl_image();
     init_extras();
 
     bool quit = false;
@@ -180,6 +147,9 @@ int main() {
 	timer fps_timer;
     int counted_frames = 0;
     fps_timer.start();
+
+    _texture = make_optional(new texture("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
+        "shaders/triangle_fragment.shader", glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
 
     while(!quit) {
         while(SDL_PollEvent(&e) != 0) {
@@ -193,7 +163,7 @@ int main() {
         }
 
         render();
-        SDL_GL_SwapWindow(window);
+
         ++counted_frames;
 
         if(counted_frames > 0 && counted_frames % 180 == 0) {

@@ -1,8 +1,0 @@
-[package]
-name = "client"
-version = "0.1.0"
-authors = ["Michael de Lang <kingoipo@gmail.com>"]
-
-[dependencies]
-common = { path = "../common" }
-websocket = "0.17.1"

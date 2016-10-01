@@ -16,9 +16,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <SDL.h>
-
 #include "timer.h"
+
+#include <SDL.h>
 
 timer::timer() : _start_ticks(0), _paused_ticks(0), _paused(false), _started(false) {
 }
@@ -57,7 +57,7 @@ void timer::unpause() {
     }
 }
 
-uint32_t timer::get_ticks() {
+uint32_t const timer::get_ticks() const {
     if(!_started) {
         return 0;
     }
@@ -69,10 +69,10 @@ uint32_t timer::get_ticks() {
     return SDL_GetTicks() - _start_ticks;
 }
 
-bool timer::is_started() {
+bool const timer::is_started() const {
     return _started;
 }
 
-bool timer::is_paused() {
+bool const timer::is_paused() const {
     return _paused;
 }
