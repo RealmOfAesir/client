@@ -74,14 +74,6 @@ GLuint load_surface_into_opengl(string const & image) {
     cout << "[texture] alignment " << alignment << endl;
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 
-    int expected_pitch = (surface->w * surface->format->BytesPerPixel + alignment - 1) / alignment * alignment;
-    /*if (surface->pitch-expected_pitch >= alignment) { // Alignment alone wont't solve it now
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, surface->pitch / surface->format->BytesPerPixel);
-    } else {
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    }*/
-    cout << "[texture] expected pitch " << expected_pitch << endl;
-
     GLuint texture_id;
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
