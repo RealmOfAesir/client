@@ -29,5 +29,5 @@ out vec2 texCoord;
 void main()
 {
     gl_Position = projection * model * vec4(position.x, position.y, position.z, 1.0);
-    texCoord = vec2(inTexCoord.x, 1.0f - inTexCoord.y);
+    texCoord = vec2(inTexCoord.x,  inTexCoord.y);
 }

@@ -157,7 +157,7 @@ int main() {
     fps_timer.start();
 
     textures.push_back(new texture("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
-        "shaders/triangle_fragment.shader", projection, glm::vec4(0.0f, 0.0f, 500.0f, 400.0f), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
+        "shaders/triangle_fragment.shader", projection, glm::vec4(0.0f, 0.0f, 320.0f, 320.0f), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
 
     while(!quit) {
         while(SDL_PollEvent(&e) != 0) {

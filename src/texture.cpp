@@ -15,8 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#define GLM_SWIZZLE
-#define GLM_FORCE_CXX14
 #include "texture.h"
 
 #include <SDL.h>
@@ -24,8 +22,6 @@
 #include <SDL_image.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/detail/_swizzle.hpp>
-#include <glm/detail/_swizzle_func.hpp>
 
 #include "shader_utils.h"
 
@@ -144,15 +140,15 @@ texture::texture(string const & image, string const & vertex_shader, string cons
 
     glm::mat4 model_matrix;
 
-    model_matrix = glm::translate(model_matrix, glm::vec3(position.xy(), 0.0f));
-    model_matrix = glm::scale(model_matrix, glm::vec3(position.ba(), 1.0f));
+    model_matrix = glm::translate(model_matrix, glm::vec3(position.x, position.y, 0.0f));
+    model_matrix = glm::scale(model_matrix, glm::vec3(position.z, position.w, 1.0f));
 
     _model = model_matrix;
 
     GLfloat vertexData[] = {
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-         1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+         0.0f,  0.0f, 0.0f, 0.0f, 0.0f,
+         1.0f,  0.0f, 0.0f, 1.0f, 0.0f,
+         0.0f,  1.0f, 0.0f, 0.0f, 1.0f,
          1.0f,  1.0f, 0.0f, 1.0f, 1.0f
     };
 
@@ -176,21 +172,18 @@ texture::texture(string const & image, string const & vertex_shader, string cons
         cout << "projection location not found in shader" << endl;
         throw new runtime_error("projection location not found in shader");
     }
-    glUniformMatrix4fv(_projection_location, 1, GL_FALSE, glm::value_ptr(_projection));
 
     _model_location = glGetUniformLocation(_program_id, "model");
     if(_model_location < 0) {
         cout << "model location not found in shader" << endl;
         throw new runtime_error("model location not found in shader");
     }
-    glUniformMatrix4fv(_model_location, 1, GL_FALSE, glm::value_ptr(_model));
 
     _textureunit_location = glGetUniformLocation(_program_id, "textureUnit");
     if(_textureunit_location < 0) {
         cout << "textureUnit not found in shader" << endl;
         throw new runtime_error("textureUnit not found in shader");
     }
-    glUniform1i(_textureunit_location, 0);
 }
 
 texture::~texture() {
