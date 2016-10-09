@@ -15,12 +15,17 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
+#define GLM_SWIZZLE
+#define GLM_FORCE_CXX14
 #include "texture.h"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include <SDL_image.h>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/detail/_swizzle.hpp>
+#include <glm/detail/_swizzle_func.hpp>
 
 #include "shader_utils.h"
 
@@ -129,17 +134,26 @@ GLuint create_shader_program(string const & vertex_shader, string const & fragme
     return program_id;
 }
 
+// position = {x, y, x+w, y+h}
 texture::texture(string const & image, string const & vertex_shader, string const & fragment_shader,
-    glm::vec4 const position, glm::vec4 const clip) {
+    glm::mat4 const projection_matrix, glm::vec4 const position, glm::vec4 const clip) {
 
     _texture_id = load_surface_into_opengl(image);
     _program_id = create_shader_program(vertex_shader, fragment_shader);
+    _projection = projection_matrix;
+
+    glm::mat4 model_matrix;
+
+    model_matrix = glm::translate(model_matrix, glm::vec3(position.xy(), 0.0f));
+    model_matrix = glm::scale(model_matrix, glm::vec3(position.ba(), 1.0f));
+
+    _model = model_matrix;
 
     GLfloat vertexData[] = {
-        -0.7f, -0.7f, 0.0f, 0.0f, 0.0f,
-         0.7f, -0.7f, 0.0f, 1.0f, 0.0f,
-        -0.7f,  0.7f, 0.0f, 0.0f, 1.0f,
-         0.7f,  0.7f, 0.0f, 1.0f, 1.0f
+        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+         1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+         1.0f,  1.0f, 0.0f, 1.0f, 1.0f
     };
 
     glGenBuffers(1, &_buffer_object);
@@ -156,6 +170,27 @@ texture::texture(string const & image, string const & vertex_shader, string cons
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
 
     glBindVertexArray(0);
+
+    _projection_location = glGetUniformLocation(_program_id, "projection");
+    if(_projection_location < 0) {
+        cout << "projection location not found in shader" << endl;
+        throw new runtime_error("projection location not found in shader");
+    }
+    glUniformMatrix4fv(_projection_location, 1, GL_FALSE, glm::value_ptr(_projection));
+
+    _model_location = glGetUniformLocation(_program_id, "model");
+    if(_model_location < 0) {
+        cout << "model location not found in shader" << endl;
+        throw new runtime_error("model location not found in shader");
+    }
+    glUniformMatrix4fv(_model_location, 1, GL_FALSE, glm::value_ptr(_model));
+
+    _textureunit_location = glGetUniformLocation(_program_id, "textureUnit");
+    if(_textureunit_location < 0) {
+        cout << "textureUnit not found in shader" << endl;
+        throw new runtime_error("textureUnit not found in shader");
+    }
+    glUniform1i(_textureunit_location, 0);
 }
 
 texture::~texture() {
@@ -168,13 +203,28 @@ void texture::render() {
     //cout << "[texture] rendering " << _program_id << " - " << _texture_id << " - " << _buffer_object << endl;
     glUseProgram(_program_id);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, _texture_id);
-    glUniform1i(glGetUniformLocation(_program_id, "textureUnit"), 0);
+    glUniformMatrix4fv(_projection_location, 1, GL_FALSE, glm::value_ptr(_projection));
+    glUniformMatrix4fv(_model_location, 1, GL_FALSE, glm::value_ptr(_model));
+    glUniform1i(_textureunit_location, 0);
 
+    glActiveTexture(GL_TEXTURE0);
+
+    glBindTexture(GL_TEXTURE_2D, _texture_id);
     glBindVertexArray(_vertex_array_id);
+
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
     glBindVertexArray(0);
 
     glUseProgram(0);
+}
+
+void texture::set_projection(glm::mat4& projection) {
+    _projection = projection;
+    glUniformMatrix4fv(_projection_location, 1, GL_FALSE, glm::value_ptr(_projection));
+}
+
+void texture::set_model(glm::mat4& model) {
+    _model = model;
+    glUniformMatrix4fv(_model_location, 1, GL_FALSE, glm::value_ptr(model));
 }

@@ -22,24 +22,26 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 #include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+#include <glm/ext.hpp>
 #include <stdio.h>
 #include <iostream>
 #include <unistd.h>
+#include <vector>
 
-#include "custom_optional.h"
 #include "shader_utils.h"
 #include "timer.h"
 #include "texture.h"
 
 using namespace std;
 
-#ifdef EXPERIMENTAL_OPTIONAL
-using namespace experimental;
-#endif
-
 SDL_Window *window = nullptr;
 SDL_GLContext context = nullptr;
-optional<texture*> _texture = {};
+vector<texture*> textures;
+glm::mat4 projection;
+
+constexpr int screenWidth = 1024;
+constexpr int screenHeight = 768;
 
 void init_sdl() {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -51,7 +53,8 @@ void init_sdl() {
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
     SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
 
-    window = SDL_CreateWindow("Realm of Aesir", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Realm of Aesir", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+        screenWidth, screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     if(window == nullptr) {
         cout << "Couldn't initialize window: " << SDL_GetError() << endl;
         exit(1);
@@ -84,6 +87,8 @@ void init_sdl() {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    projection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
 }
 
 void init_sdl_image() {
@@ -96,8 +101,8 @@ void init_sdl_image() {
 
 void close()
 {
-    if(_texture) {
-        delete _texture.value();
+    for(auto *tex : textures) {
+        delete tex;
     }
 
 	SDL_DestroyWindow(window);
@@ -112,8 +117,8 @@ void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    if(_texture) {
-        _texture.value()->render();
+    for(auto& tex : textures) {
+        tex->render();
     }
 
     SDL_GL_SwapWindow(window);
@@ -151,8 +156,8 @@ int main() {
     int counted_frames = 0;
     fps_timer.start();
 
-    _texture = make_optional(new texture("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
-        "shaders/triangle_fragment.shader", glm::vec4(0.0f, 0.0f, 0.0f, 0.0f), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
+    textures.push_back(new texture("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
+        "shaders/triangle_fragment.shader", projection, glm::vec4(0.0f, 0.0f, 500.0f, 400.0f), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
 
     while(!quit) {
         while(SDL_PollEvent(&e) != 0) {
@@ -173,8 +178,9 @@ int main() {
             cout << "FPS: " << counted_frames / (fps_timer.get_ticks() / 1000.f) << endl;
         }
 
-        if(counted_frames > 4'000'000'000) {
+        if(counted_frames < 0) {
             counted_frames = 0;
+            fps_timer.start();
         }
     }
 
