@@ -28,24 +28,31 @@
 #include <iostream>
 #include <unistd.h>
 #include <vector>
+#include <easylogging++.h>
 
 #include "shader_utils.h"
 #include "timer.h"
-#include "texture.h"
+#include "tile.h"
 
 using namespace std;
 
 SDL_Window *window = nullptr;
 SDL_GLContext context = nullptr;
-vector<texture*> textures;
+vector<tile*> tiles;
 glm::mat4 projection;
 
 constexpr int screenWidth = 1024;
 constexpr int screenHeight = 768;
 
+INITIALIZE_EASYLOGGINGPP
+
+void initialize_logger() {
+    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level: %msg");
+}
+
 void init_sdl() {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
-        cout << "SDL Init went wrong: " << SDL_GetError() << endl;
+        LOG(ERROR) << "[main] SDL Init went wrong: " << SDL_GetError();
         exit(1);
     }
 
@@ -56,30 +63,30 @@ void init_sdl() {
     window = SDL_CreateWindow("Realm of Aesir", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         screenWidth, screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     if(window == nullptr) {
-        cout << "Couldn't initialize window: " << SDL_GetError() << endl;
+        LOG(ERROR) << "[main] Couldn't initialize window: " << SDL_GetError();
         exit(1);
     }
 
     context = SDL_GL_CreateContext(window);
     if(context == nullptr) {
-        cout << "Couldn't initialize context: " << SDL_GetError() << endl;
+        LOG(ERROR) << "[main] Couldn't initialize context: " << SDL_GetError();
         exit(1);
     }
 
 	glewExperimental = GL_TRUE;
 	GLenum glewError = glewInit();
 	if(glewError != GLEW_OK) {
-        cout << "Error initializing GLEW! " << glewGetErrorString(glewError) << endl;
+        LOG(ERROR) << "[main] Error initializing GLEW! " << glewGetErrorString(glewError);
         exit(1);
 	}
 
     if(SDL_GL_SetSwapInterval(1) < 0) {
-        cout << "Couldn't initialize vsync: " << SDL_GetError() << endl;
+        LOG(ERROR) << "[main] Couldn't initialize vsync: " << SDL_GetError();
         exit(1);
     }
 
     if(SDL_GL_MakeCurrent(window, context) < 0) {
-        cout << "Couldn't make OpenGL context current: " << SDL_GetError() << endl;
+        LOG(ERROR) << "[main] Couldn't make OpenGL context current: " << SDL_GetError();
         exit(1);
     }
 
@@ -94,14 +101,14 @@ void init_sdl() {
 void init_sdl_image() {
     int initted = IMG_Init(IMG_INIT_PNG);
     if((initted & IMG_INIT_PNG) != IMG_INIT_PNG) {
-        cout << "SDL image init went wrong: " << IMG_GetError() << endl;
+        LOG(ERROR) << "[main] SDL image init went wrong: " << IMG_GetError();
         exit(1);
     }
 }
 
 void close()
 {
-    for(auto *tex : textures) {
+    for(auto *tex : tiles) {
         delete tex;
     }
 
@@ -117,7 +124,7 @@ void render()
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    for(auto& tex : textures) {
+    for(auto& tex : tiles) {
         tex->render();
     }
 
@@ -127,11 +134,11 @@ void render()
 void set_working_dir() {
     char *base_path = SDL_GetBasePath();
     if (base_path) {
-        cout << "Set base_path to " << base_path << endl;
+        LOG(INFO) << "[main] Set base_path to " << base_path;
         chdir(base_path);
         SDL_free(base_path);
     } else {
-        cout << "Couldn't get base path: " << SDL_GetError() << endl;
+        LOG(ERROR) << "[main] Couldn't get base path: " << SDL_GetError();
         exit(1);
     }
 
@@ -142,6 +149,7 @@ void init_extras() {
 }
 
 int main() {
+    initialize_logger();
     init_sdl();
     set_working_dir();
     init_sdl_image();
@@ -156,7 +164,7 @@ int main() {
     int counted_frames = 0;
     fps_timer.start();
 
-    textures.push_back(new texture("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
+    tiles.push_back(new tile("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
         "shaders/triangle_fragment.shader", projection, glm::vec4(0.0f, 0.0f, 320.0f, 320.0f), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
 
     while(!quit) {
@@ -175,7 +183,7 @@ int main() {
         ++counted_frames;
 
         if(counted_frames > 0 && counted_frames % 180 == 0) {
-            cout << "FPS: " << counted_frames / (fps_timer.get_ticks() / 1000.f) << endl;
+            LOG(INFO) << "[main] FPS: " << counted_frames / (fps_timer.get_ticks() / 1000.f);
         }
 
         if(counted_frames < 0) {

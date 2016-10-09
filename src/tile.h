@@ -26,13 +26,13 @@
 #include <glm/mat4x4.hpp>
 #include <iostream>
 
-class texture {
+class tile {
     public:
-        texture(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
+        tile(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
             glm::mat4 const projection_matrix, glm::vec4 const position, glm::vec4 const clip);
-        texture(texture&&) = default;
+        tile(tile&&) = default;
 
-        ~texture();
+        ~tile();
 
         void render();
         void set_projection(glm::mat4& projection);
@@ -40,6 +40,7 @@ class texture {
         void set_model(glm::mat4& model);
 
     private:
+        std::string const _image;
         GLuint _program_id;
         GLuint _buffer_object;
         GLuint _texture_id;

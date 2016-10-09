@@ -49,6 +49,7 @@ include_directories("${SDL2IMAGE_INCLUDE_DIRS}")
 include_directories("${OPENGL_INCLUDE_DIR}")
 include_directories("${GLEW_INCLUDE_DIRS}")
 include_directories("${GLM_INCLUDE_DIRS}")
+include_directories("${CMAKE_SOURCE_DIR}/external")
 
 target_link_libraries(RealmOfAesir ${SDL2_LIBRARIES})
 target_link_libraries(RealmOfAesir ${SDL2IMAGE_LIBRARIES})

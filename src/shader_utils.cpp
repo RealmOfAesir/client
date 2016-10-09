@@ -18,6 +18,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <easylogging++.h>
 
 #include "shader_utils.h"
 
@@ -38,12 +39,12 @@ void print_shader_log(GLuint const shader) {
 
         glGetShaderInfoLog(shader, maxLength, &infoLogLength, infoLog);
         if(infoLogLength > 0) {
-            cout << infoLog << endl;
+            LOG(ERROR) << infoLog;
         }
 
         delete[] infoLog;
     } else {
-        cout << "Name " << shader << " is not a shader" << endl;
+        LOG(FATAL) << "[shader_utils] Name " << shader << " is not a shader";
     }
 }
 
@@ -58,12 +59,12 @@ void print_program_log(GLuint const program) {
 
         glGetProgramInfoLog(program, maxLength, &infoLogLength, infoLog);
         if(infoLogLength > 0) {
-            cout << infoLog << endl;
+            LOG(ERROR) << infoLog;
         }
 
         delete[] infoLog;
     } else {
-        cout << "Name " << program << " is not a program" << endl;
+        LOG(FATAL) << "[shader_utils] Name " << program << " is not a program";
     }
 }
 
@@ -75,7 +76,7 @@ optional<GLuint> const load_shader_from_file(string const & path, GLenum const s
 
     //Source file loaded
     if(!sourceFile) {
-        cout << "Unable to open shader file " << path << endl;
+        LOG(FATAL) << "[shader_utils] Unable to open shader file " << path;
         return {};
     }
 
@@ -83,7 +84,7 @@ optional<GLuint> const load_shader_from_file(string const & path, GLenum const s
     shaderString.assign((istreambuf_iterator<char>(sourceFile)), istreambuf_iterator<char>());
 
     shaderID = glCreateShader(shaderType);
-    cout << "loading & compiling shader " << shaderID << " with path " << path << endl;
+    LOG(INFO) << "[shader_utils] loading & compiling shader " << shaderID << " with path " << path;
 
     const GLchar* shaderSource = shaderString.c_str();
     glShaderSource(shaderID, 1, (const GLchar**)&shaderSource, NULL);
@@ -93,7 +94,7 @@ optional<GLuint> const load_shader_from_file(string const & path, GLenum const s
     GLint shaderCompiled = GL_FALSE;
     glGetShaderiv(shaderID, GL_COMPILE_STATUS, &shaderCompiled);
     if(shaderCompiled != GL_TRUE) {
-        cout << "Unable to compile shader " << shaderID << "\n\nSource: " << shaderSource << endl;
+        LOG(ERROR) << "[shader_utils] Unable to compile shader " << shaderID << "\n\nSource: " << shaderSource;
         print_shader_log(shaderID);
         glDeleteShader(shaderID);
         return {};
