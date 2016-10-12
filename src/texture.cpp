@@ -16,18 +16,12 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#version 330 core
+#include "texture.h"
 
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec2 inTexCoord;
+texture::texture(GLuint texture_id, uint32_t reference_count, uint32_t width, uint32_t height)
+    : _texture_id(texture_id), _reference_count(reference_count), _width(width), _height(height) {
 
-uniform mat4 model;
-uniform mat4 projection;
-
-out vec2 texCoord;
-
-void main()
-{
-    gl_Position = projection * model * vec4(position.x, position.y, 0.0, 1.0);
-    texCoord = vec2(inTexCoord.x,  inTexCoord.y);
 }
+
+// Normally there'd be a destructor here, but checking the reference count is the duty of texture_manager.
+// So no destructor necessary.

@@ -26,24 +26,32 @@
 #include <glm/mat4x4.hpp>
 #include <iostream>
 
+#include "texture.h"
+#include "custom_optional.h"
+
 class tile {
     public:
+        #ifdef EXPERIMENTAL_OPTIONAL
         tile(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
-            glm::mat4 const projection_matrix, glm::vec4 const position, glm::vec4 const clip);
+            glm::mat4 const projection_matrix, glm::vec4 const position, std::experimental::optional<glm::vec4> const clip);
+        #else
+        tile(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
+            glm::mat4 const projection_matrix, glm::vec4 const position, std::optional<glm::vec4> const clip);
+        #endif
         tile(tile&&) = default;
 
         ~tile();
 
-        void render();
+        void render() const;
         void set_projection(glm::mat4& projection);
         void set_position(glm::mat4& position);
         void set_model(glm::mat4& model);
 
     private:
         std::string const _image;
+        texture _texture;
         GLuint _program_id;
         GLuint _buffer_object;
-        GLuint _texture_id;
         GLuint _vertex_array_id;
         glm::vec4 _position;
         glm::vec4 _clip;

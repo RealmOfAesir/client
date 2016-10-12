@@ -47,7 +47,10 @@ constexpr int screenHeight = 768;
 INITIALIZE_EASYLOGGINGPP
 
 void initialize_logger() {
-    el::Loggers::reconfigureAllLoggers(el::ConfigurationType::Format, "%datetime %level: %msg");
+    el::Configurations defaultConf;
+    defaultConf.setGlobally(el::ConfigurationType::Format, "%datetime %level: %msg");
+    //defaultConf.set(el::Level::Info, el::ConfigurationType::Enabled, "false");
+    el::Loggers::reconfigureAllLoggers(defaultConf);
 }
 
 void init_sdl() {
@@ -162,10 +165,17 @@ int main() {
 
 	timer fps_timer;
     int counted_frames = 0;
-    fps_timer.start();
 
-    tiles.push_back(new tile("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
-        "shaders/triangle_fragment.shader", projection, glm::vec4(0.0f, 0.0f, 320.0f, 320.0f), glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
+    for(int i = 0; i < 10; i++) {
+        for(int x = 0; x < 10; x++) {
+            for(int y = 0; y < 10; y++) {
+                tiles.push_back(new tile("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
+                    "shaders/triangle_fragment.shader", projection, glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f), glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f)));
+            }
+        }
+    }
+
+    fps_timer.start();
 
     while(!quit) {
         while(SDL_PollEvent(&e) != 0) {
@@ -182,13 +192,10 @@ int main() {
 
         ++counted_frames;
 
-        if(counted_frames > 0 && counted_frames % 180 == 0) {
+        if(fps_timer.get_ticks() > 1500) {
             LOG(INFO) << "[main] FPS: " << counted_frames / (fps_timer.get_ticks() / 1000.f);
-        }
-
-        if(counted_frames < 0) {
-            counted_frames = 0;
             fps_timer.start();
+            counted_frames = 0;
         }
     }
 

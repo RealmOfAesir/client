@@ -26,6 +26,8 @@
 #include <glm/mat4x4.hpp>
 #include <iostream>
 
-GLuint load_surface_into_opengl(std::string const & image);
+#include "texture.h"
+
+texture create_texture_from_image(std::string const & image);
 GLuint create_shader_program(std::string const & vertex_shader, std::string const & fragment_shader);
 void delete_texture(std::string const & image);

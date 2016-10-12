@@ -20,7 +20,6 @@
 
 #include <unordered_map>
 #include <SDL.h>
-//#include <SDL_opengl.h>
 #include <SDL_image.h>
 #include <easylogging++.h>
 
@@ -28,23 +27,15 @@
 
 using namespace std;
 
-class texture {
-    public:
-        GLuint _texture_id;
-        uint32_t _reference_count;
-
-        texture(GLuint texture_id, uint32_t reference_count) : _texture_id(texture_id), _reference_count(reference_count) { }
-};
-
 unordered_map<string, texture> texture_cache;
 
-GLuint load_surface_into_opengl(string const & image) {
+texture create_texture_from_image(string const & image) {
 
     auto found_texture = texture_cache.find(image);
 
     if(found_texture != texture_cache.end()) {
         found_texture->second._reference_count++;
-        return found_texture->second._texture_id;
+        return found_texture->second;
     }
 
     SDL_Surface *surface = IMG_Load(image.c_str());
@@ -107,13 +98,16 @@ GLuint load_surface_into_opengl(string const & image) {
 
     SDL_FreeSurface(surface);
 
-    auto succeeded = texture_cache.insert(make_pair(image, texture(texture_id, 1))).second;
+    texture tex = texture(texture_id, 1, surface->w, surface->h);
+    auto succeeded = texture_cache.insert(make_pair(image, tex)).second;
 
     if(!succeeded) {
         LOG(FATAL) << "[texture_manager] Couldn't insert texture into cache " << image;
     }
 
-    return texture_id;
+    LOG(INFO) << "[texture_manager] created texture " << texture_id;
+
+    return tex;
 }
 
 GLuint create_shader_program(string const & vertex_shader, string const & fragment_shader) {

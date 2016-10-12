@@ -16,18 +16,22 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#version 330 core
+#pragma once
 
-layout (location = 0) in vec2 position;
-layout (location = 1) in vec2 inTexCoord;
+#ifndef __gl_h_
+#include <GL/glew.h>
+#endif
 
-uniform mat4 model;
-uniform mat4 projection;
+#include <tuple>
 
-out vec2 texCoord;
+class texture {
+    public:
+        texture(GLuint texture_id, uint32_t reference_count, uint32_t width, uint32_t height);
+        texture(texture&&) = default;
+        texture(const texture&) = default;
 
-void main()
-{
-    gl_Position = projection * model * vec4(position.x, position.y, 0.0, 1.0);
-    texCoord = vec2(inTexCoord.x,  inTexCoord.y);
-}
+        GLuint const _texture_id;
+        uint32_t _reference_count;
+        uint32_t const _width;
+        uint32_t const _height;
+};
