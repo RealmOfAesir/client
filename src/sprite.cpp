@@ -43,25 +43,24 @@ sprite::sprite(string const & image, string const & vertex_shader, string const 
     _projection = projection_matrix;
 
     array<GLfloat, 16> vertexData;
+
+    float x = position.x;
+    float y = position.y;
+    float w = position.z;
+    float h = position.w;
+
+    vertexData = {
+        x, y, 0.0f, 0.0f,
+        x+w, y, 1.0f, 0.0f,
+        x, y+h, 0.0f, 1.0f,
+        x+w, y+h, 1.0f, 1.0f
+    };
+
     if(clip) {
         if(clip.value().x < 0 || clip.value().x > _texture._width || clip.value().y < 0 || clip.value().y > _texture._height) {
             LOG(FATAL) << "clip out of bounds";
         }
-
-        float x = position.x;
-        float y = position.y;
-        float w = position.z;
-        float h = position.w;
-
-        LOG(INFO) << "[sprite] " << x << " " << y << " " << w << " " << h << endl;
-
-        vertexData = {
-            x, y, 0.0f, 0.0f,
-            x+w, y, 1.0f, 0.0f,
-            x, y, 0.0f, 1.0f,
-            x+y, y+h, 1.0f, 1.0f
-        };
-
+        
         vertexData[2] = clip.value().x / _texture._width;
         vertexData[3] = clip.value().y / _texture._height;
 
@@ -73,13 +72,6 @@ sprite::sprite(string const & image, string const & vertex_shader, string const 
 
         vertexData[14] = (clip.value().x + clip.value().z) / _texture._width;
         vertexData[15] = (clip.value().y + clip.value().w) / _texture._height;
-    } else {
-        vertexData = {
-            0.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 1.0f, 1.0f
-        };
     }
 
     glGenBuffers(1, &_buffer_object);
