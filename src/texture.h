@@ -22,11 +22,9 @@
 #include <GL/glew.h>
 #endif
 
-#include <tuple>
-
 class texture {
     public:
-        texture(GLuint texture_id, uint32_t reference_count, uint32_t width, uint32_t height);
+        texture(GLuint texture_id, uint32_t reference_count, uint32_t width, uint32_t height) noexcept;
         texture(texture&&) = default;
         texture(const texture&) = default;
 

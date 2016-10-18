@@ -20,10 +20,10 @@
 
 #include <SDL.h>
 
-timer::timer() : _start_ticks(0), _paused_ticks(0), _paused(false), _started(false) {
+timer::timer() noexcept : _start_ticks(0), _paused_ticks(0), _paused(false), _started(false) {
 }
 
-void timer::start() {
+void timer::start() noexcept {
     _started = true;
     _paused = false;
 
@@ -31,7 +31,7 @@ void timer::start() {
     _paused_ticks = 0;
 }
 
-void timer::stop() {
+void timer::stop() noexcept {
     _started = false;
     _paused = false;
 
@@ -39,7 +39,7 @@ void timer::stop() {
     _paused_ticks = 0;
 }
 
-void timer::pause() {
+void timer::pause() noexcept {
     if(_started && !_paused) {
         _paused = true;
 
@@ -48,7 +48,7 @@ void timer::pause() {
     }
 }
 
-void timer::unpause() {
+void timer::unpause() noexcept {
     if(_started && _paused) {
         _paused = false;
 
@@ -57,7 +57,7 @@ void timer::unpause() {
     }
 }
 
-uint32_t const timer::get_ticks() const {
+uint32_t const timer::get_ticks() const noexcept {
     if(!_started) {
         return 0;
     }
@@ -69,10 +69,10 @@ uint32_t const timer::get_ticks() const {
     return SDL_GetTicks() - _start_ticks;
 }
 
-bool const timer::is_started() const {
+bool const timer::is_started() const noexcept {
     return _started;
 }
 
-bool const timer::is_paused() const {
+bool const timer::is_paused() const noexcept {
     return _paused;
 }

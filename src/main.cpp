@@ -32,13 +32,13 @@
 
 #include "shader_utils.h"
 #include "timer.h"
-#include "tile.h"
+#include "sprite.h"
 
 using namespace std;
 
 SDL_Window *window = nullptr;
 SDL_GLContext context = nullptr;
-vector<tile*> tiles;
+vector<sprite*> sprites;
 glm::mat4 projection;
 
 constexpr int screenWidth = 1024;
@@ -46,22 +46,23 @@ constexpr int screenHeight = 768;
 
 INITIALIZE_EASYLOGGINGPP
 
-void initialize_logger() {
+void initialize_logger() noexcept {
     el::Configurations defaultConf;
     defaultConf.setGlobally(el::ConfigurationType::Format, "%datetime %level: %msg");
     //defaultConf.set(el::Level::Info, el::ConfigurationType::Enabled, "false");
     el::Loggers::reconfigureAllLoggers(defaultConf);
 }
 
-void init_sdl() {
+void init_sdl() noexcept {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         LOG(ERROR) << "[main] SDL Init went wrong: " << SDL_GetError();
         exit(1);
     }
 
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
-    SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     window = SDL_CreateWindow("Realm of Aesir", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
         screenWidth, screenHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
@@ -101,7 +102,7 @@ void init_sdl() {
     projection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
 }
 
-void init_sdl_image() {
+void init_sdl_image() noexcept {
     int initted = IMG_Init(IMG_INIT_PNG);
     if((initted & IMG_INIT_PNG) != IMG_INIT_PNG) {
         LOG(ERROR) << "[main] SDL image init went wrong: " << IMG_GetError();
@@ -109,9 +110,9 @@ void init_sdl_image() {
     }
 }
 
-void close()
+void close() noexcept
 {
-    for(auto *tex : tiles) {
+    for(auto *tex : sprites) {
         delete tex;
     }
 
@@ -123,18 +124,18 @@ void close()
 	SDL_Quit();
 }
 
-void render()
+void render() noexcept
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    for(auto& tex : tiles) {
+    for(auto& tex : sprites) {
         tex->render();
     }
 
     SDL_GL_SwapWindow(window);
 }
 
-void set_working_dir() {
+void set_working_dir() noexcept {
     char *base_path = SDL_GetBasePath();
     if (base_path) {
         LOG(INFO) << "[main] Set base_path to " << base_path;
@@ -147,7 +148,7 @@ void set_working_dir() {
 
 }
 
-void init_extras() {
+void init_extras() noexcept {
     ios::sync_with_stdio(false);
 }
 
@@ -166,14 +167,17 @@ int main() {
 	timer fps_timer;
     int counted_frames = 0;
 
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 1; i++) {
         for(int x = 0; x < 10; x++) {
             for(int y = 0; y < 10; y++) {
-                tiles.push_back(new tile("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
+                sprites.push_back(new sprite("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
                     "shaders/triangle_fragment.shader", projection, glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f), glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f)));
             }
         }
     }
+
+    sprites.push_back(new sprite("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
+        "shaders/triangle_fragment.shader", projection, glm::vec4(320.0f, 320.0f, 320.0f, 320.0f), {}));
 
     fps_timer.start();
 

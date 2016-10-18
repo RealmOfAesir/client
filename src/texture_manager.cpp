@@ -29,7 +29,7 @@ using namespace std;
 
 unordered_map<string, texture> texture_cache;
 
-texture create_texture_from_image(string const & image) {
+texture create_texture_from_image(string const & image) noexcept {
 
     auto found_texture = texture_cache.find(image);
 
@@ -93,6 +93,8 @@ texture create_texture_from_image(string const & image) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -110,7 +112,7 @@ texture create_texture_from_image(string const & image) {
     return tex;
 }
 
-GLuint create_shader_program(string const & vertex_shader, string const & fragment_shader) {
+GLuint create_shader_program(string const & vertex_shader, string const & fragment_shader) noexcept {
     GLuint program_id = glCreateProgram();
 
     auto vertexShaderMaybe = load_shader_from_file(vertex_shader, GL_VERTEX_SHADER);
@@ -144,7 +146,7 @@ GLuint create_shader_program(string const & vertex_shader, string const & fragme
     return program_id;
 }
 
-void delete_texture(std::string const & image) {
+void delete_texture(std::string const & image) noexcept {
     auto found_texture = texture_cache.find(image);
 
     if(found_texture != texture_cache.end()) {

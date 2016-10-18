@@ -22,10 +22,10 @@
 
 #include "custom_optional.h"
 
-void print_shader_log(GLuint const shader);
-void print_program_log(GLuint const program);
+void print_shader_log(GLuint const shader) noexcept;
+void print_program_log(GLuint const program) noexcept;
 #ifdef EXPERIMENTAL_OPTIONAL
-std::experimental::optional<GLuint> const load_shader_from_file(std::string const & path, GLenum const shaderType);
+std::experimental::optional<GLuint> const load_shader_from_file(std::string const & path, GLenum const shaderType) noexcept;
 #else
-std::optional<GLuint> const load_shader_from_file(std::string const & path, GLenum const shaderType);
+std::optional<GLuint> const load_shader_from_file(std::string const & path, GLenum const shaderType) noexcept;
 #endif

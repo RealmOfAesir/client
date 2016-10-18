@@ -28,6 +28,6 @@
 
 #include "texture.h"
 
-texture create_texture_from_image(std::string const & image);
-GLuint create_shader_program(std::string const & vertex_shader, std::string const & fragment_shader);
-void delete_texture(std::string const & image);
+texture create_texture_from_image(std::string const & image) noexcept;
+GLuint create_shader_program(std::string const & vertex_shader, std::string const & fragment_shader) noexcept;
+void delete_texture(std::string const & image) noexcept;

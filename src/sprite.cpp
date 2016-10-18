@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "tile.h"
+#include "sprite.h"
 
 #include <array>
 #include <SDL.h>
@@ -35,18 +35,12 @@ using namespace std;
 using namespace experimental;
 #endif
 
-tile::tile(string const & image, string const & vertex_shader, string const & fragment_shader,
-    glm::mat4 const projection_matrix, glm::vec4 const position, optional<glm::vec4> const clip) : _image(image), _texture(create_texture_from_image(image)) {
+sprite::sprite(string const & image, string const & vertex_shader, string const & fragment_shader,
+    glm::mat4 const projection_matrix, glm::vec4 const position, optional<glm::vec4> const clip) noexcept
+     : _image(image), _texture(create_texture_from_image(image)) {
 
     _program_id = create_shader_program(vertex_shader, fragment_shader);
     _projection = projection_matrix;
-
-    glm::mat4 model_matrix;
-
-    model_matrix = glm::translate(model_matrix, glm::vec3(position.x, position.y, 0.0f));
-    model_matrix = glm::scale(model_matrix, glm::vec3(position.z, position.w, 1.0f));
-
-    _model = model_matrix;
 
     array<GLfloat, 16> vertexData;
     if(clip) {
@@ -54,11 +48,18 @@ tile::tile(string const & image, string const & vertex_shader, string const & fr
             LOG(FATAL) << "clip out of bounds";
         }
 
+        float x = position.x;
+        float y = position.y;
+        float w = position.z;
+        float h = position.w;
+
+        LOG(INFO) << "[sprite] " << x << " " << y << " " << w << " " << h << endl;
+
         vertexData = {
-            0.0f, 0.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 1.0f, 1.0f
+            x, y, 0.0f, 0.0f,
+            x+w, y, 1.0f, 0.0f,
+            x, y, 0.0f, 1.0f,
+            x+y, y+h, 1.0f, 1.0f
         };
 
         vertexData[2] = clip.value().x / _texture._width;
@@ -86,7 +87,7 @@ tile::tile(string const & image, string const & vertex_shader, string const & fr
     glBindVertexArray(_vertex_array_id);
 
     glBindBuffer(GL_ARRAY_BUFFER, _buffer_object);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexData), vertexData.data(), GL_DYNAMIC_DRAW);
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
@@ -104,12 +105,6 @@ tile::tile(string const & image, string const & vertex_shader, string const & fr
     }
     glUniformMatrix4fv(_projection_location, 1, GL_FALSE, glm::value_ptr(_projection));
 
-    _model_location = glGetUniformLocation(_program_id, "model");
-    if(_model_location < 0) {
-        LOG(FATAL) << "[tile] model location not found in shader" << endl;
-    }
-    glUniformMatrix4fv(_model_location, 1, GL_FALSE, glm::value_ptr(_model));
-
     _textureunit_location = glGetUniformLocation(_program_id, "textureUnit");
     if(_textureunit_location < 0) {
         LOG(FATAL) << "[tile] textureUnit not found in shader" << endl;
@@ -119,13 +114,13 @@ tile::tile(string const & image, string const & vertex_shader, string const & fr
     glUseProgram(0);
 }
 
-tile::~tile() {
+sprite::~sprite() noexcept {
     glDeleteBuffers(1, &_buffer_object);
     glDeleteProgram(_program_id);
     delete_texture(_image);
 }
 
-void tile::render() const {
+void sprite::render() const noexcept {
     //LOG(INFO) << "[tile] rendering " << _program_id << " - " << _texture_id << " - " << _buffer_object << endl;
     glUseProgram(_program_id);
 
@@ -141,14 +136,7 @@ void tile::render() const {
     glUseProgram(0);
 }
 
-void tile::set_projection(glm::mat4& projection) {
+void sprite::set_projection(glm::mat4& projection) noexcept {
     _projection = projection;
     glUniformMatrix4fv(_projection_location, 1, GL_FALSE, glm::value_ptr(_projection));
-}
-
-
-// rename to set_position and scale/translate.
-void tile::set_model(glm::mat4& model) {
-    _model = model;
-    glUniformMatrix4fv(_model_location, 1, GL_FALSE, glm::value_ptr(model));
 }

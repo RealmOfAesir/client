@@ -23,17 +23,17 @@
 class timer
 {
     public:
-		timer();
+		timer() noexcept;
 
-		void start();
-		void stop();
-		void pause();
-		void unpause();
+		void start() noexcept;
+		void stop() noexcept;
+		void pause() noexcept;
+		void unpause() noexcept;
 
-		uint32_t const get_ticks() const;
+		uint32_t const get_ticks() const noexcept;
 
-		bool const is_started() const;
-		bool const is_paused() const;
+		bool const is_started() const noexcept;
+		bool const is_paused() const noexcept;
 
     private:
 		uint32_t _start_ticks;

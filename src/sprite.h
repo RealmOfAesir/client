@@ -29,23 +29,22 @@
 #include "texture.h"
 #include "custom_optional.h"
 
-class tile {
+class sprite {
     public:
         #ifdef EXPERIMENTAL_OPTIONAL
-        tile(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
-            glm::mat4 const projection_matrix, glm::vec4 const position, std::experimental::optional<glm::vec4> const clip);
+        sprite(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
+            glm::mat4 const projection_matrix, glm::vec4 const position, std::experimental::optional<glm::vec4> const clip) noexcept;
         #else
-        tile(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
-            glm::mat4 const projection_matrix, glm::vec4 const position, std::optional<glm::vec4> const clip);
+        sprite(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
+            glm::mat4 const projection_matrix, glm::vec4 const position, std::optional<glm::vec4> const clip) noexcept;
         #endif
-        tile(tile&&) = default;
+        sprite(sprite&&) = default;
 
-        ~tile();
+        ~sprite() noexcept;
 
-        void render() const;
-        void set_projection(glm::mat4& projection);
-        void set_position(glm::mat4& position);
-        void set_model(glm::mat4& model);
+        void render() const noexcept;
+        void set_projection(glm::mat4& projection) noexcept;
+        void set_position(glm::mat4& position) noexcept;
 
     private:
         std::string const _image;
@@ -56,8 +55,6 @@ class tile {
         glm::vec4 _position;
         glm::vec4 _clip;
         glm::mat4 _projection;
-        glm::mat4 _model;
         GLint _projection_location;
-        GLint _model_location;
         GLint _textureunit_location;
 };
