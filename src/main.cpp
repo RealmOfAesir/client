@@ -53,6 +53,52 @@ void initialize_logger() noexcept {
     el::Loggers::reconfigureAllLoggers(defaultConf);
 }
 
+void GLAPIENTRY openglCallbackFunction(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+    const GLchar* message, const void* userParam) {
+
+    if(severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
+        return;
+    }
+
+    LOG(DEBUG) << "[opengl] message: " << message;
+
+    switch(type) {
+    case GL_DEBUG_TYPE_ERROR:
+        LOG(DEBUG) << "[opengl] type: ERROR";
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        LOG(DEBUG) << "[opengl] type: DEPRECATED_BEHAVIOUR";
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        LOG(DEBUG) << "[opengl] type: UNDEFINED_BEHAVIOR";
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        LOG(DEBUG) << "[opengl] type: PORTABILITY";
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        LOG(DEBUG) << "[opengl] type: PERFORMANCE";
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        LOG(DEBUG) << "[opengl] type: OTHER";
+        break;
+    }
+
+    LOG(DEBUG) << "[opengl] id: " << id;
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_LOW:
+            LOG(DEBUG) << "[opengl] severity: LOW";
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            LOG(DEBUG) << "[opengl] severity: MEDIUM";
+            break;
+        case GL_DEBUG_SEVERITY_HIGH:
+            LOG(DEBUG) << "[opengl] severity: HIGH";
+            break;
+        default:
+            LOG(DEBUG) << "[opengl] severity: UNKNOWN " << severity;
+    }
+}
+
 void init_sdl() noexcept {
     if(SDL_Init(SDL_INIT_VIDEO) < 0) {
         LOG(ERROR) << "[main] SDL Init went wrong: " << SDL_GetError();
@@ -62,6 +108,7 @@ void init_sdl() noexcept {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     window = SDL_CreateWindow("Realm of Aesir", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
@@ -98,6 +145,21 @@ void init_sdl() noexcept {
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    if(glDebugMessageCallback){
+        LOG(DEBUG) << "[main] Register OpenGL debug callback ";
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(openglCallbackFunction, nullptr);
+        GLuint unusedIds = 0;
+        glDebugMessageControl(GL_DONT_CARE,
+            GL_DONT_CARE,
+            GL_DONT_CARE,
+            0,
+            &unusedIds,
+            true);
+    } else {
+        LOG(ERROR) << "[main] glDebugMessageCallback not available";
+    }
 
     projection = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
 }

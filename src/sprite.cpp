@@ -60,7 +60,7 @@ sprite::sprite(string const & image, string const & vertex_shader, string const 
         if(clip.value().x < 0 || clip.value().x > _texture._width || clip.value().y < 0 || clip.value().y > _texture._height) {
             LOG(FATAL) << "clip out of bounds";
         }
-        
+
         vertexData[2] = clip.value().x / _texture._width;
         vertexData[3] = clip.value().y / _texture._height;
 
@@ -101,7 +101,7 @@ sprite::sprite(string const & image, string const & vertex_shader, string const 
     if(_textureunit_location < 0) {
         LOG(FATAL) << "[tile] textureUnit not found in shader" << endl;
     }
-    glUniform1i(_textureunit_location, GL_TEXTURE0);
+    glUniform1i(_textureunit_location, 0);
 
     glUseProgram(0);
 }
