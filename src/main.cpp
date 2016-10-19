@@ -28,17 +28,20 @@
 #include <iostream>
 #include <unistd.h>
 #include <vector>
+#include <memory>
 #include <easylogging++.h>
 
 #include "shader_utils.h"
 #include "timer.h"
 #include "sprite.h"
+#include "texture_atlas.h"
 
 using namespace std;
 
 SDL_Window *window = nullptr;
 SDL_GLContext context = nullptr;
 vector<sprite*> sprites;
+shared_ptr<texture_atlas> atlas;
 glm::mat4 projection;
 
 constexpr int screenWidth = 1024;
@@ -190,9 +193,7 @@ void render() noexcept
 {
 	glClear(GL_COLOR_BUFFER_BIT);
 
-    for(auto& tex : sprites) {
-        tex->render();
-    }
+    atlas->render();
 
     SDL_GL_SwapWindow(window);
 }
@@ -229,17 +230,18 @@ int main() {
 	timer fps_timer;
     int counted_frames = 0;
 
-    for(int i = 0; i < 1; i++) {
+    atlas = make_shared<texture_atlas>("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
+        "shaders/triangle_fragment.shader", projection, 200);
+
+    for(int i = 0; i < 100; i++) {
         for(int x = 0; x < 10; x++) {
             for(int y = 0; y < 10; y++) {
-                sprites.push_back(new sprite("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
-                    "shaders/triangle_fragment.shader", projection, glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f), glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f)));
+                sprites.push_back(new sprite(atlas, glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f), glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f)));
             }
         }
     }
 
-    sprites.push_back(new sprite("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
-        "shaders/triangle_fragment.shader", projection, glm::vec4(320.0f, 320.0f, 320.0f, 320.0f), {}));
+    sprites.push_back(new sprite(atlas, glm::vec4(320.0f, 320.0f, 320.0f, 320.0f), {}));
 
     fps_timer.start();
 

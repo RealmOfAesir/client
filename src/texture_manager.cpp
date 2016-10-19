@@ -112,7 +112,7 @@ texture create_texture_from_image(string const & image) noexcept {
     return tex;
 }
 
-GLuint create_shader_program(string const & vertex_shader, string const & fragment_shader) noexcept {
+GLuint create_shader_program(string const & vertex_shader, string const & fragment_shader) {
     GLuint program_id = glCreateProgram();
 
     auto vertexShaderMaybe = load_shader_from_file(vertex_shader, GL_VERTEX_SHADER);

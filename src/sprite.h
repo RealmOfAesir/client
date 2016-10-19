@@ -25,36 +25,26 @@
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 #include <iostream>
+#include <memory>
 
-#include "texture.h"
+#include "texture_atlas.h"
 #include "custom_optional.h"
 
 class sprite {
     public:
         #ifdef EXPERIMENTAL_OPTIONAL
-        sprite(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
-            glm::mat4 const projection_matrix, glm::vec4 const position, std::experimental::optional<glm::vec4> const clip) noexcept;
+        sprite(std::shared_ptr<texture_atlas> texture_atlas, glm::vec4 const position, std::experimental::optional<glm::vec4> const clip) noexcept;
         #else
-        sprite(std::string const & image, std::string const & vertex_shader, std::string const & fragment_shader,
-            glm::mat4 const projection_matrix, glm::vec4 const position, std::optional<glm::vec4> const clip) noexcept;
+        sprite(std::shared_ptr<texture_atlas> texture_atlas, glm::vec4 const position, std::optional<glm::vec4> const clip) noexcept;
         #endif
         sprite(sprite&&) = default;
 
         ~sprite() noexcept;
 
-        void render() const noexcept;
-        void set_projection(glm::mat4& projection) noexcept;
         void set_position(glm::mat4& position) noexcept;
 
     private:
-        std::string const _image;
-        texture _texture;
-        GLuint _program_id;
-        GLuint _buffer_object;
-        GLuint _vertex_array_id;
+        std::shared_ptr<texture_atlas> _texture_atlas;
         glm::vec4 _position;
-        glm::vec4 _clip;
-        glm::mat4 _projection;
-        GLint _projection_location;
-        GLint _textureunit_location;
+        uint32_t _vertex_data_position;
 };
