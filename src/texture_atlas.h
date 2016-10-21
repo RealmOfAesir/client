@@ -27,6 +27,7 @@
 #include <iostream>
 #include <array>
 #include <vector>
+#include <queue>
 
 #include "texture.h"
 
@@ -57,7 +58,7 @@ class texture_atlas {
         GLint _projection_location;
         GLint _textureunit_location;
         std::vector<std::vector<GLfloat>> _vertex_data;
-        std::vector<bool> _vertex_data_used;
+        std::queue<uint32_t> _vertex_data_unused;
         uint32_t _capacity;
         uint32_t _highest_allocated;
         bool _allocated_at_least_one;

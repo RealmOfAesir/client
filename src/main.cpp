@@ -181,6 +181,8 @@ void close() noexcept
         delete tex;
     }
 
+    atlas = nullptr;
+
 	SDL_DestroyWindow(window);
 	window = nullptr;
 
@@ -231,13 +233,16 @@ int main() {
     int counted_frames = 0;
 
     atlas = make_shared<texture_atlas>("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
-        "shaders/triangle_fragment.shader", projection, 200);
+        "shaders/triangle_fragment.shader", projection, 100000);
 
-    for(int i = 0; i < 100; i++) {
+    for(int i = 0; i < 2000; i++) {
         for(int x = 0; x < 10; x++) {
             for(int y = 0; y < 10; y++) {
                 sprites.push_back(new sprite(atlas, glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f), glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f)));
             }
+        }
+        if(i%10 == 0) {
+            LOG(DEBUG) << "i: " << i;
         }
     }
 

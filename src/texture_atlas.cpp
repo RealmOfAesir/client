@@ -40,7 +40,6 @@ texture_atlas::texture_atlas(string const & image, string const & vertex_shader,
     _program_id = create_shader_program(vertex_shader, fragment_shader);
     _projection = projection_matrix;
     _vertex_data.resize(capacity);
-    _vertex_data_used.resize(capacity);
 
     glGenBuffers(1, &_buffer_object);
     glGenVertexArrays(1, &_vertex_array);
@@ -86,7 +85,7 @@ void texture_atlas::render() const noexcept {
     if(!_allocated_at_least_one) {
         return;
     }
-    
+
     glUseProgram(_program_id);
 
     glActiveTexture(GL_TEXTURE0);
@@ -108,11 +107,9 @@ void texture_atlas::set_projection(glm::mat4& projection) noexcept {
 
 uint32_t const texture_atlas::add_data_object(std::array<GLfloat, 16> new_vertex_data) {
     optional<uint32_t> foundLocation;
-    for(uint32_t i = 0; i < _capacity; i++) {
-        if(!_vertex_data_used[i]) {
-            foundLocation = i;
-            break;
-        }
+    if(_vertex_data_unused.size() > 0) {
+        foundLocation = _vertex_data_unused.front();
+        _vertex_data_unused.pop();
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, _buffer_object);
@@ -120,16 +117,13 @@ uint32_t const texture_atlas::add_data_object(std::array<GLfloat, 16> new_vertex
 
     if(foundLocation) {
         i = foundLocation.value();
-        //LOG(DEBUG) << "[texture_atlas] found location at " << i << " - " << _highest_allocated;
     } else {
         i = _highest_allocated + 1;
-        //LOG(DEBUG) << "[texture_atlas] new location at " << i << " - " << _highest_allocated;
 
         if(i == _capacity) {
             _capacity *= 2;
             LOG(DEBUG) << "[texture_atlas] resizing capacity to " << _capacity;
             _vertex_data.resize(_capacity);
-            _vertex_data_used.resize(_capacity);
 
             glBufferData(GL_ARRAY_BUFFER, _capacity * 16 * sizeof(uint32_t), nullptr, GL_DYNAMIC_DRAW);
 
@@ -141,14 +135,11 @@ uint32_t const texture_atlas::add_data_object(std::array<GLfloat, 16> new_vertex
 
     _vertex_data[i].clear();
     _vertex_data[i].insert(end(_vertex_data[i]), begin(new_vertex_data), end(new_vertex_data));
-    _vertex_data_used[i] = true;
 
     if(i > _highest_allocated) {
         _highest_allocated = i;
     }
 
-    //LOG(DEBUG) << "[texture_atlas] _vertex_data[i].size() " << _vertex_data[i].size();
-    //LOG(DEBUG) << "[texture_atlas] _vertex_data[i][0] " << _vertex_data[i][0];
     glBufferSubData(GL_ARRAY_BUFFER, i * 16 * sizeof(uint32_t), 16 * sizeof(uint32_t), _vertex_data[i].data());
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     _allocated_at_least_one = true;

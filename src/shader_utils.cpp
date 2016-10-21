@@ -44,7 +44,7 @@ void print_shader_log(GLuint const shader) noexcept {
 
         delete[] infoLog;
     } else {
-        LOG(FATAL) << "[shader_utils] Name " << shader << " is not a shader";
+        LOG(ERROR) << "[shader_utils] Name " << shader << " is not a shader";
     }
 }
 
@@ -64,7 +64,7 @@ void print_program_log(GLuint const program) noexcept {
 
         delete[] infoLog;
     } else {
-        LOG(FATAL) << "[shader_utils] Name " << program << " is not a program";
+        LOG(ERROR) << "[shader_utils] Name " << program << " is not a program";
     }
 }
 
@@ -76,7 +76,7 @@ optional<GLuint> const load_shader_from_file(string const & path, GLenum const s
 
     //Source file loaded
     if(!sourceFile) {
-        LOG(FATAL) << "[shader_utils] Unable to open shader file " << path;
+        LOG(ERROR) << "[shader_utils] Unable to open shader file " << path;
         return {};
     }
 

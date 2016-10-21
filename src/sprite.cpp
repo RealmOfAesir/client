@@ -72,5 +72,5 @@ sprite::sprite(std::shared_ptr<texture_atlas> texture_atlas, glm::vec4 const pos
 }
 
 sprite::~sprite() noexcept {
-
+    _texture_atlas->remove_data_object(_vertex_data_position);
 }
