@@ -1,5 +1,13 @@
 .git/
-target
-Cargo.lock
 .env
-tokamak.toml
+CMakeFiles/
+CMakeCache.txt
+cmake_*
+bin/
+Makefile
+build/
+logs/
+*.cbp
+*.cmake
+
+.idea/

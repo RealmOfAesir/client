@@ -15,31 +15,3 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#pragma once
-
-#include <cstdint>
-
-class timer
-{
-    public:
-		timer() noexcept;
-
-		void start() noexcept;
-		void stop() noexcept;
-		void pause() noexcept;
-		void unpause() noexcept;
-
-		uint32_t get_ticks() const noexcept;
-
-		bool is_started() const noexcept;
-		bool is_paused() const noexcept;
-
-    private:
-		uint32_t _start_ticks;
-
-		uint32_t _paused_ticks;
-
-		bool _paused;
-		bool _started;
-};

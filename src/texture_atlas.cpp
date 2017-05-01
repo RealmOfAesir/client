@@ -102,10 +102,12 @@ void texture_atlas::render() const noexcept {
 
 void texture_atlas::set_projection(glm::mat4& projection) noexcept {
     _projection = projection;
+    glUseProgram(_program_id);
     glUniformMatrix4fv(_projection_location, 1, GL_FALSE, glm::value_ptr(_projection));
+    glUseProgram(0);
 }
 
-uint32_t const texture_atlas::add_data_object(std::array<GLfloat, 16> new_vertex_data) {
+uint32_t texture_atlas::add_data_object(std::array<GLfloat, 16> new_vertex_data) {
     optional<uint32_t> foundLocation;
     if(_vertex_data_unused.size() > 0) {
         foundLocation = _vertex_data_unused.front();
@@ -160,10 +162,10 @@ void texture_atlas::remove_data_object(uint32_t position) {
     }
 }
 
-uint32_t const texture_atlas::texture_width() const noexcept {
+uint32_t texture_atlas::texture_width() const noexcept {
     return _texture._width;
 }
 
-uint32_t const texture_atlas::texture_height() const noexcept {
+uint32_t texture_atlas::texture_height() const noexcept {
     return _texture._height;
 }

@@ -57,7 +57,7 @@ void timer::unpause() noexcept {
     }
 }
 
-uint32_t const timer::get_ticks() const noexcept {
+uint32_t timer::get_ticks() const noexcept {
     if(!_started) {
         return 0;
     }
@@ -69,10 +69,10 @@ uint32_t const timer::get_ticks() const noexcept {
     return SDL_GetTicks() - _start_ticks;
 }
 
-bool const timer::is_started() const noexcept {
+bool timer::is_started() const noexcept {
     return _started;
 }
 
-bool const timer::is_paused() const noexcept {
+bool timer::is_paused() const noexcept {
     return _paused;
 }

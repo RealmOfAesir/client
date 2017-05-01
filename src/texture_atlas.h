@@ -40,12 +40,12 @@ class texture_atlas {
 
         void render() const noexcept;
         void set_projection(glm::mat4& projection) noexcept;
-        uint32_t const add_data_object(std::array<GLfloat, 16> vertexData);
+        uint32_t add_data_object(std::array<GLfloat, 16> vertexData);
         void update_data_object(std::array<GLfloat, 16> vertexData, uint32_t position);
         void remove_data_object(uint32_t position);
 
-        uint32_t const texture_width() const noexcept;
-        uint32_t const texture_height() const noexcept;
+        uint32_t texture_width() const noexcept;
+        uint32_t texture_height() const noexcept;
 
     private:
         std::string const _image;

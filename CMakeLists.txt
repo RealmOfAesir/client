@@ -18,7 +18,9 @@ if(MSVC)
   endif()
 elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
   # Update if necessary
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DELPP_THREAD_SAFE -Wall -Wno-unused-variable -Wno-long-long -Wfloat-equal -pedantic")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g3 -ggdb -O0")
+  set(CMAKE_CXX_FLAGS_RELEASE "-g -O2")
 endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
@@ -26,7 +28,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 file(GLOB PROJECT_SOURCES ${PROJECT_SOURCE_DIR}/src/*.cpp)
-add_executable(RealmOfAesir ${PROJECT_SOURCES})
+file(GLOB EASYLOGGING_SOURCE ${CMAKE_SOURCE_DIR}/external/common/external/easyloggingpp/src/easylogging++.cc)
+add_executable(RealmOfAesir ${EASYLOGGING_SOURCE} ${PROJECT_SOURCES})
 
 include(FindOpenGL)
 include(FindGLEW)
@@ -44,19 +47,54 @@ find_package(SDL2 REQUIRED >= 2.0.4)
 find_package(SDL2_image REQUIRED >= 2.0.0)
 find_package(GLM REQUIRED >= 0.9.7)
 
-include_directories("${SDL2_INCLUDE_DIRS}")
-include_directories("${SDL2IMAGE_INCLUDE_DIRS}")
+find_library(LIBROA_COMMON_LIBRARY RealmOfAesirCommon HINTS ${CMAKE_SOURCE_DIR}/external/common/bin)
+find_library(LIBRDKAFKA_LIBRARY rdkafka HINTS ${CMAKE_SOURCE_DIR}/external/common/external/librdkafka/src)
+find_library(LIBRDKAFKAPP_LIBRARY rdkafka++ HINTS ${CMAKE_SOURCE_DIR}/external/common/external/librdkafka/src-cpp)
+
+include_directories("${SDL2_INCLUDE_DIR}")
+include_directories("${SDL2_IMAGE_INCLUDE_DIRS}")
 include_directories("${OPENGL_INCLUDE_DIR}")
 include_directories("${GLEW_INCLUDE_DIRS}")
 include_directories("${GLM_INCLUDE_DIRS}")
-include_directories("${CMAKE_SOURCE_DIR}/external")
+include_directories("${CMAKE_SOURCE_DIR}/external/common/external/librdkafka/src-cpp")
+include_directories("${CMAKE_SOURCE_DIR}/external/common/external/librdkafka/src")
+include_directories("${CMAKE_SOURCE_DIR}/external/common/external/easyloggingpp/src")
 
-target_link_libraries(RealmOfAesir ${SDL2_LIBRARIES})
-target_link_libraries(RealmOfAesir ${SDL2IMAGE_LIBRARIES})
+if(NOT SDL2_LIBRARY)
+    message(FATAL_ERROR "sdl2 not found")
+endif()
+
+if(NOT SDL2_IMAGE_LIBRARIES)
+    message(FATAL_ERROR "sdl2image not found")
+endif()
+
+if(NOT OPENGL_LIBRARIES)
+    message(FATAL_ERROR "opengl not found")
+endif()
+
+if(NOT GLEW_LIBRARIES)
+    message(FATAL_ERROR "glew not found")
+endif()
+
+if(NOT LIBROA_COMMON_LIBRARY)
+    message(FATAL_ERROR "libroa not found")
+endif()
+
+if(NOT LIBRDKAFKAPP_LIBRARY)
+    message(FATAL_ERROR "kafka++ not found")
+endif()
+
+if(NOT LIBRDKAFKA_LIBRARY)
+    message(FATAL_ERROR "kafka not found")
+endif()
+
+target_link_libraries(RealmOfAesir ${SDL2_LIBRARY})
+target_link_libraries(RealmOfAesir ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(RealmOfAesir ${OPENGL_LIBRARIES})
 target_link_libraries(RealmOfAesir ${GLEW_LIBRARIES})
-target_link_libraries(RealmOfAesir ${GLM_LIBRARIES})
-
+target_link_libraries(RealmOfAesir ${LIBROA_COMMON_LIBRARY})
+target_link_libraries(RealmOfAesir ${LIBRDKAFKAPP_LIBRARY})
+target_link_libraries(RealmOfAesir ${LIBRDKAFKA_LIBRARY})
 
 #post-build esque stuff
 add_custom_command(

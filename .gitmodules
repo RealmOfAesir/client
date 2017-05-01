@@ -1,3 +1,9 @@
 [submodule "assets"]
 	path = assets
 	url = https://github.com/RealmOfAesir/assets
+[submodule "external/cpprestsdk"]
+	path = external/cpprestsdk
+	url = https://github.com/Microsoft/cpprestsdk.git
+[submodule "external/common"]
+	path = external/common
+	url = https://github.com/RealmOfAesir/common.git

@@ -49,7 +49,7 @@ constexpr int screenHeight = 768;
 
 INITIALIZE_EASYLOGGINGPP
 
-void initialize_logger() noexcept {
+void init_logger() noexcept {
     el::Configurations defaultConf;
     defaultConf.setGlobally(el::ConfigurationType::Format, "%datetime %level: %msg");
     //defaultConf.set(el::Level::Info, el::ConfigurationType::Enabled, "false");
@@ -218,7 +218,7 @@ void init_extras() noexcept {
 }
 
 int main() {
-    initialize_logger();
+    init_logger();
     init_sdl();
     set_working_dir();
     init_sdl_image();
@@ -233,15 +233,15 @@ int main() {
     int counted_frames = 0;
 
     atlas = make_shared<texture_atlas>("assets/tilesets/angband/dg_armor32.gif.png", "shaders/triangle_vertex.shader",
-        "shaders/triangle_fragment.shader", projection, 100000);
+        "shaders/triangle_fragment.shader", projection, 30000);
 
-    for(int i = 0; i < 2000; i++) {
+    for(int i = 0; i < 1000; i++) {
         for(int x = 0; x < 10; x++) {
             for(int y = 0; y < 10; y++) {
                 sprites.push_back(new sprite(atlas, glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f), glm::vec4(x * 32.0f, y * 32.0f, 32.0f, 32.0f)));
             }
         }
-        if(i%10 == 0) {
+        if(i % 10 == 0 && i > 0) {
             LOG(DEBUG) << "i: " << i;
         }
     }
@@ -250,6 +250,7 @@ int main() {
 
     fps_timer.start();
 
+    int temp_pos = 0;
     while(!quit) {
         while(SDL_PollEvent(&e) != 0) {
             if(e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) {
@@ -269,6 +270,10 @@ int main() {
             LOG(INFO) << "[main] FPS: " << counted_frames / (fps_timer.get_ticks() / 1000.f);
             fps_timer.start();
             counted_frames = 0;
+
+            temp_pos += 20;
+            auto projection = glm::ortho((float)temp_pos, (float)screenWidth + temp_pos, (float)screenHeight, 0.0f, -1.0f, 1.0f);
+            atlas->set_projection(projection);
         }
     }
 

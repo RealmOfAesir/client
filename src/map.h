@@ -18,28 +18,13 @@
 
 #pragma once
 
-#include <cstdint>
+#include <iostream>
 
-class timer
-{
+
+class map {
     public:
-		timer() noexcept;
+        map();
+        ~map();
 
-		void start() noexcept;
-		void stop() noexcept;
-		void pause() noexcept;
-		void unpause() noexcept;
-
-		uint32_t get_ticks() const noexcept;
-
-		bool is_started() const noexcept;
-		bool is_paused() const noexcept;
-
-    private:
-		uint32_t _start_ticks;
-
-		uint32_t _paused_ticks;
-
-		bool _paused;
-		bool _started;
+        bool load_from_memory(std::string json);
 };
